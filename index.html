@@ -13,6 +13,7 @@
             --accent1: #00f3ff; 
             --accent2: #bd00ff; 
             --glow: 0 0 10px rgba(0, 243, 255, 0.5);
+            --success: #10b981;
         }
         
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
@@ -61,14 +62,24 @@
         /* Custom Grids for Layouts */
         .split-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
 
-        /* Workspace Lists */
+        /* Workspace & Accordion Lists */
         ul { list-style: none; padding: 0; margin: 0; }
         .task-card, .update-item { background: #1e293b; border-left: 4px solid var(--accent1); margin-bottom: 10px; padding: 15px; border-radius: 6px; word-wrap: break-word; position: relative;}
         .update-header { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--accent1); font-weight: bold; }
         
-        /* Admin Delete Button */
+        /* Threaded Updates inside Goals */
+        .goal-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        .goal-header:hover { opacity: 0.8; }
+        .goal-thread { display: none; padding-top: 15px; margin-top: 15px; border-top: 1px solid #334155; }
+        .thread-item { background: #0f172a; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 0.9em; border-left: 2px solid var(--accent2); }
+        .completed-goal { border-left-color: var(--success); opacity: 0.8; }
+        .completed-goal .goal-title-text { text-decoration: line-through; color: var(--success); }
+
+        /* Admin Buttons */
         .delete-btn { background: none; border: none; color: #ef4444; font-size: 1.2rem; cursor: pointer; transition: 0.2s; padding: 0 5px; }
         .delete-btn:hover { transform: scale(1.2); }
+        .done-btn { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.85em; margin-right: 10px; }
+        .done-btn:hover { background: var(--success); color: white; }
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
@@ -113,12 +124,10 @@
         <div class="panel">
             <h2>About Our Major Project</h2>
             <div id="project-description-area" style="line-height: 1.6; color: #cbd5e1;">
-                
                 <h3>AI Enhanced Portable Nephelometer</h3>
                 <p>Welcome to our final year Biomedical Engineering major project workspace. This project aims to design and develop a low-cost, smartphone-integrated nephelometer...</p>
-                <p><i>(Delete this text and write your actual project abstract, system architecture, and team roles here later using a code editor!)</i></p>
-
-                </div>
+                <p><i>(Delete this text and write your actual project abstract here!)</i></p>
+            </div>
         </div>
     </div>
 
@@ -143,24 +152,14 @@
     </div>
 
     <div id="workspace" class="page">
-        <div class="split-grid">
-            <div class="panel">
-                <h2>🎯 Weekly Goals</h2>
-                <div class="input-group">
-                    <input type="text" id="goal-title" placeholder="Task / Goal (E.g., System Design)">
-                    <button class="action-btn" onclick="window.sendData('goals')">Set Goal</button>
-                </div>
-                <ul id="goals-list"></ul>
+        <div class="panel">
+            <h2>🎯 Team Workspace & Goals</h2>
+            <div class="input-group" style="max-width: 600px; margin-bottom: 30px;">
+                <input type="text" id="goal-title" placeholder="Define a new Goal or Task (E.g., Design Hardware Circuit)">
+                <button class="action-btn" onclick="window.sendData('goals')">Create New Goal</button>
             </div>
-
-            <div class="panel">
-                <h2>⚡ Progress Updates</h2>
-                <div class="input-group">
-                    <textarea id="update-text" rows="3" placeholder="What did you finish today?"></textarea>
-                    <button class="action-btn" onclick="window.sendData('updates')">Post Update</button>
-                </div>
-                <ul id="updates-list"></ul>
-            </div>
+            
+            <ul id="threaded-goals-list"></ul>
         </div>
     </div>
 
@@ -197,7 +196,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+    // ADDED 'update' TO IMPORTS TO MARK TASKS AS DONE
+    import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAl49ZDjLdpWiuuyxHWTy2rEKc4CI2bNAQ",
@@ -214,6 +214,9 @@
     const db = getDatabase(app);
     let user = "";
 
+    // Global variable to store updates temporarily for weaving into goals
+    let allUpdates = []; 
+
     window.switchTab = function(tabId) {
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -221,12 +224,11 @@
         event.currentTarget.classList.add('active');
     }
 
-    window.togglePaper = function(id) {
+    window.toggleAccordion = function(id) {
         const details = document.getElementById('details-' + id);
         details.style.display = details.style.display === 'block' ? 'none' : 'block';
     }
 
-    // Auto-login if previously saved
     window.onload = function() {
         const savedUser = localStorage.getItem('hubUser');
         if (savedUser) { 
@@ -237,16 +239,14 @@
         }
     };
 
-    // --- SECURE LOGIN FUNCTION ---
     window.login = function(selectedUser) {
         if (selectedUser === 'Anoop') {
             const enteredPin = prompt("Please enter the Admin PIN to continue:");
             if (enteredPin !== "891529") {
                 alert("Incorrect PIN. Access denied.");
-                return; // Stops the function, leaving them on the login screen
+                return; 
             }
         }
-
         user = selectedUser;
         localStorage.setItem('hubUser', user);
         document.getElementById('login-overlay').style.display = 'none';
@@ -259,9 +259,10 @@
         location.reload();
     }
 
+    // --- ADMIN ACTIONS ---
     window.deleteItem = function(path, id) {
         if (user === 'Anoop') {
-            if (confirm("Admin: Are you sure you want to delete this entry?")) {
+            if (confirm("Admin: Are you sure you want to delete this?")) {
                 remove(ref(db, `${path}/${id}`));
             }
         } else {
@@ -269,17 +270,25 @@
         }
     }
 
+    window.markCompleted = function(id) {
+        if (user === 'Anoop') {
+            update(ref(db, `goals/${id}`), { completed: true });
+        } else {
+            alert("Only Anoop can officially mark a goal as completed!");
+        }
+    }
+
+    // --- DATA SENDING ---
     window.sendData = function(type) {
         let dataObj = { user: user, time: new Date().toLocaleDateString() };
         
         if (type === 'goals') {
             const title = document.getElementById('goal-title').value;
             if (!title) return;
-            dataObj.title = title; document.getElementById('goal-title').value = "";
-        } else if (type === 'updates') {
-            const text = document.getElementById('update-text').value;
-            if (!text) return;
-            dataObj.text = text; document.getElementById('update-text').value = "";
+            dataObj.title = title;
+            dataObj.completed = false; // By default, new goals are not completed
+            document.getElementById('goal-title').value = "";
+        
         } else if (type === 'research') {
             const title = document.getElementById('res-title').value;
             if (!title) return;
@@ -289,12 +298,14 @@
             dataObj.gaps = document.getElementById('res-gaps').value;
             dataObj.link = document.getElementById('res-link').value;
             ['title', 'desc', 'takeaways', 'gaps', 'link'].forEach(id => document.getElementById(`res-${id}`).value = "");
+        
         } else if (type === 'components') {
             const item = document.getElementById('req-item').value;
             if (!item) return;
             dataObj.item = item;
             dataObj.cost = document.getElementById('req-cost').value;
             ['item', 'cost'].forEach(id => document.getElementById(`req-${id}`).value = "");
+
         } else if (type === 'purchases') {
             const item = document.getElementById('buy-item').value;
             if (!item) return;
@@ -307,40 +318,108 @@
         push(ref(db, type), dataObj);
     }
 
+    // New function specific to sending a threaded update
+    window.sendThreadUpdate = function(goalId) {
+        const inputId = `update-input-${goalId}`;
+        const text = document.getElementById(inputId).value;
+        if (!text) return;
+
+        let updateObj = {
+            goalId: goalId,  // Links this update to the specific goal
+            user: user,
+            text: text,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })
+        };
+        
+        push(ref(db, 'updates'), updateObj);
+        document.getElementById(inputId).value = ""; // Clear input
+    }
+
+    // --- REALTIME LISTENING ---
     function listenToData() {
         const getDeleteBtn = (path, id) => user === 'Anoop' ? `<button class="delete-btn" onclick="event.stopPropagation(); window.deleteItem('${path}', '${id}')">🗑️</button>` : '';
+        const getDoneBtn = (id) => user === 'Anoop' ? `<button class="done-btn" onclick="event.stopPropagation(); window.markCompleted('${id}')">✅ Mark as Done</button>` : '';
 
-        onValue(ref(db, 'goals'), (snapshot) => {
-            const list = document.getElementById('goals-list');
-            list.innerHTML = ""; 
-            snapshot.forEach((child) => {
-                const g = child.val();
-                list.innerHTML = `<li class="task-card"><div style="display:flex; justify-content:space-between;"><div><b>${g.title}</b><br><small>Added by: ${g.user}</small></div> ${getDeleteBtn('goals', child.key)}</div></li>` + list.innerHTML;
-            });
-        });
-
+        // Step 1: Listen to all Updates constantly and save them to memory
         onValue(ref(db, 'updates'), (snapshot) => {
-            const list = document.getElementById('updates-list');
-            list.innerHTML = "";
+            allUpdates = [];
             snapshot.forEach((child) => {
-                const u = child.val();
-                list.innerHTML = `<li class="update-item"><div class="update-header"><span>${u.user}</span><div><span style="font-size:0.8em; color:#94a3b8;">${u.time}</span> ${getDeleteBtn('updates', child.key)}</div></div><div>${u.text}</div></li>` + list.innerHTML;
+                allUpdates.push({ id: child.key, ...child.val() });
             });
+            // Every time an update happens, trigger a re-draw of the Goals list
+            drawGoalsList(); 
         });
 
+        // Step 2: Listen to all Goals and store them in memory
+        let allGoals = [];
+        onValue(ref(db, 'goals'), (snapshot) => {
+            allGoals = [];
+            snapshot.forEach((child) => {
+                allGoals.push({ id: child.key, ...child.val() });
+            });
+            drawGoalsList();
+        });
+
+        // Step 3: Function to weave Goals and Updates together
+        function drawGoalsList() {
+            const list = document.getElementById('threaded-goals-list');
+            list.innerHTML = ""; 
+
+            // Reverse to show newest goals at top
+            allGoals.slice().reverse().forEach((g) => {
+                // Filter updates that belong to THIS goal
+                const myUpdates = allUpdates.filter(u => u.goalId === g.id);
+                let updatesHTML = "";
+                myUpdates.forEach(u => {
+                    updatesHTML += `<div class="thread-item"><b>${u.user}</b> <span style="font-size:0.8em; color:#94a3b8;">(${u.time})</span>: ${u.text} ${getDeleteBtn('updates', u.id)}</div>`;
+                });
+
+                const isCompleted = g.completed ? "completed-goal" : "";
+                const titlePrefix = g.completed ? "✅ [DONE] " : "🎯 ";
+
+                list.innerHTML += `
+                    <li class="task-card ${isCompleted}">
+                        <div class="goal-header" onclick="window.toggleAccordion('${g.id}')">
+                            <div class="goal-title-text" style="font-size: 1.1em; font-weight: bold;">
+                                ${titlePrefix} ${g.title} <br><small style="color:#94a3b8; font-weight:normal;">Created by ${g.user}</small>
+                            </div>
+                            <div>
+                                ${!g.completed ? getDoneBtn(g.id) : ''}
+                                ${getDeleteBtn('goals', g.id)}
+                                <span>➕ Expand Thread</span>
+                            </div>
+                        </div>
+
+                        <div id="details-${g.id}" class="goal-thread">
+                            <div style="margin-bottom: 15px; max-height: 300px; overflow-y: auto;">
+                                ${updatesHTML || '<div style="color: #64748b; font-style: italic;">No progress updates yet...</div>'}
+                            </div>
+                            
+                            ${!g.completed ? `
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" id="update-input-${g.id}" placeholder="Type an update for this goal..." style="background: #0f172a;">
+                                    <button class="action-btn" style="width: auto;" onclick="window.sendThreadUpdate('${g.id}')">Post</button>
+                                </div>
+                            ` : '<div style="color: var(--success); font-weight: bold; text-align: center;">This goal has been completed! Great job team.</div>'}
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        // Research Listen
         onValue(ref(db, 'research'), (snapshot) => {
             const list = document.getElementById('research-list');
             list.innerHTML = "";
             snapshot.forEach((child) => {
                 const p = child.val();
-                const uniqueId = child.key; 
                 list.innerHTML = `
                     <div class="task-card" style="padding:0;">
-                        <div style="padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items:center;" onclick="window.togglePaper('${uniqueId}')">
+                        <div style="padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items:center;" onclick="window.toggleAccordion('res-${child.key}')">
                             <span style="font-weight:bold; color:var(--text);">📄 ${p.title}</span> 
-                            <div>${getDeleteBtn('research', uniqueId)} <span>➕</span></div>
+                            <div>${getDeleteBtn('research', child.key)} <span>➕</span></div>
                         </div>
-                        <div id="details-${uniqueId}" style="display: none; padding: 15px; border-top: 1px solid #334155; background: #0f172a; font-size: 0.95rem; line-height: 1.5; color: #cbd5e1;">
+                        <div id="details-res-${child.key}" style="display: none; padding: 15px; border-top: 1px solid #334155; background: #0f172a; font-size: 0.95rem; line-height: 1.5; color: #cbd5e1;">
                             <p><strong>Description:</strong> ${p.desc}</p>
                             <p><strong>Key Takeaways:</strong> ${p.takeaways}</p>
                             <p><strong>Gaps Identified:</strong> ${p.gaps}</p>
@@ -352,6 +431,7 @@
             });
         });
 
+        // Components Wishlist Listen
         onValue(ref(db, 'components'), (snapshot) => {
             const list = document.getElementById('req-list');
             list.innerHTML = "";
@@ -361,6 +441,7 @@
             });
         });
 
+        // Purchases Listen
         onValue(ref(db, 'purchases'), (snapshot) => {
             const list = document.getElementById('buy-list');
             list.innerHTML = "";
