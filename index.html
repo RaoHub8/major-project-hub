@@ -44,7 +44,7 @@
             <option value="Anoop">Anoop</option>
             <option value="Rohan">Rohan</option>
             <option value="Manoj">Manoj</option>
-            <option value="Member 4">Member 4</option>
+            <option value="Sneha">Sneha</option>
         </select>
         <button onclick="window.login()">Enter Workspace</button>
     </div>
@@ -56,7 +56,7 @@
         <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.8;" id="welcome-text">Loading...</p>
     </div>
     <div class="meet-controls">
-        <a href="https://meet.google.com/new" target="_blank">🎥 Join Team Meet</a>
+        <a href="https://meet.google.com/nis-txvd-oao" target="_blank">🎥 Join Team Meet</a>
         <a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Major+Project+Sync" target="_blank">📅 Schedule Sync</a>
     </div>
 </header>
@@ -102,12 +102,29 @@
     
     let user = "";
 
-    // Attached to window so the HTML buttons can find the functions
+    // Auto-login if previously logged in on this browser
+    window.onload = function() {
+        const savedUser = localStorage.getItem('hubUser');
+        if (savedUser) {
+            user = savedUser;
+            document.getElementById('user-select').value = user;
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('welcome-text').innerText = `Logged in as: ${user}`;
+            listenToData();
+        }
+    };
+
     window.login = function() {
         user = document.getElementById('user-select').value;
+        localStorage.setItem('hubUser', user); // Save login state
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('welcome-text').innerText = `Logged in as: ${user}`;
         listenToData(); 
+    }
+
+    window.logout = function() {
+        localStorage.removeItem('hubUser');
+        location.reload();
     }
 
     window.sendData = function(type) {
@@ -128,18 +145,18 @@
             document.getElementById('update-text').value = "";
         }
 
-        // Push data to Firebase Realtime Database
-        push(ref(db, type), dataObj);
+        push(ref(db, type), dataObj).catch((error) => {
+            console.error("Error saving data: ", error);
+            alert("Could not save data. Please check your internet connection and Firebase rules.");
+        });
     }
 
     function listenToData() {
-        // Listen for new Goals
         onValue(ref(db, 'goals'), (snapshot) => {
             const list = document.getElementById('goals-list');
             list.innerHTML = ""; 
             snapshot.forEach((child) => {
                 const g = child.val();
-                // Add new items to the top
                 list.innerHTML = `
                     <li class="task-card">
                         <div class="task-title">${g.title}</div>
@@ -149,7 +166,6 @@
             });
         });
 
-        // Listen for new Updates
         onValue(ref(db, 'updates'), (snapshot) => {
             const list = document.getElementById('updates-list');
             list.innerHTML = "";
