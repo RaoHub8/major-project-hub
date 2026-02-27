@@ -1,40 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>AI Nephelometer Project Hub</title>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <style>
         :root { --primary: #1e293b; --accent: #3b82f6; --bg: #f8fafc; --text: #334155; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
         
-        /* Login Overlay */
         #login-overlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 1000; color: white; }
         .login-box { text-align: center; padding: 2.5rem; background: rgba(255,255,255,0.1); border-radius: 12px; backdrop-filter: blur(10px); }
         select, button { padding: 12px; border-radius: 6px; border: none; margin-top: 15px; font-size: 16px; width: 100%; cursor: pointer; }
         button { background: var(--accent); color: white; font-weight: bold; transition: 0.2s; }
         button:hover { background: #2563eb; }
 
-        /* Header & Meet Section */
         header { background: var(--primary); color: white; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
         .meet-controls a { background: white; color: var(--primary); padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-left: 10px; font-size: 14px; }
 
-        /* Dashboard Layout */
         .container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; padding: 20px; max-width: 1200px; margin: auto; }
         .column { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); min-height: 500px; }
         h2 { border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; color: var(--primary); }
         
-        /* Inputs & Feed */
         .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 15px; border-radius: 8px; }
         input, textarea { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; }
         ul { list-style: none; padding: 0; margin: 0; }
         
-        /* Task Cards */
         .task-card { background: #fff; border: 1px solid #e2e8f0; border-left: 5px solid var(--accent); margin-bottom: 15px; padding: 15px; border-radius: 6px; }
         .task-title { font-weight: bold; font-size: 1.1em; color: var(--primary); margin-bottom: 5px; }
         .task-meta { font-size: 0.85em; color: #64748b; }
         
-        /* Update Feed */
         .update-item { padding: 15px; border-bottom: 1px solid #e2e8f0; }
         .update-item:last-child { border-bottom: none; }
         .update-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
@@ -53,7 +46,7 @@
             <option value="Manoj">Manoj</option>
             <option value="Member 4">Member 4</option>
         </select>
-        <button onclick="login()">Enter Workspace</button>
+        <button onclick="window.login()">Enter Workspace</button>
     </div>
 </div>
 
@@ -72,9 +65,9 @@
     <div class="column">
         <h2>🎯 Current Weekly Goals</h2>
         <div class="input-group">
-            <input type="text" id="goal-title" placeholder="E.g., Design System Architecture">
+            <input type="text" id="goal-title" placeholder="E.g., Finalize System Design">
             <input type="text" id="goal-owner" placeholder="Who is leading this?">
-            <button onclick="sendData('goals')">Set New Goal</button>
+            <button onclick="window.sendData('goals')">Set New Goal</button>
         </div>
         <ul id="goals-list"></ul>
     </div>
@@ -82,32 +75,42 @@
     <div class="column">
         <h2>⚡ Progress Updates</h2>
         <div class="input-group">
-            <textarea id="update-text" rows="3" placeholder="What progress did you make today? (Mention the goal you worked on)"></textarea>
-            <button onclick="sendData('updates')">Post Update to Team</button>
+            <textarea id="update-text" rows="3" placeholder="What progress did you make today?"></textarea>
+            <button onclick="window.sendData('updates')">Post Update to Team</button>
         </div>
         <ul id="updates-list"></ul>
     </div>
 </div>
 
-<script>
-    // YOU WILL PASTE YOUR FIREBASE CONFIG HERE LATER
-    // const firebaseConfig = { ... };
-    // firebase.initializeApp(firebaseConfig);
-    // const db = firebase.database();
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAl49ZDjLdpWiuuyxHWTy2rEKc4CI2bNAQ",
+        authDomain: "projecthub-51861.firebaseapp.com",
+        databaseURL: "https://projecthub-51861-default-rtdb.firebaseio.com",
+        projectId: "projecthub-51861",
+        storageBucket: "projecthub-51861.firebasestorage.app",
+        messagingSenderId: "535723375812",
+        appId: "1:535723375812:web:6f9b41f5a11c44e1b4dd91",
+        measurementId: "G-BZC2KJR64S"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
     
     let user = "";
 
-    function login() {
+    // Attached to window so the HTML buttons can find the functions
+    window.login = function() {
         user = document.getElementById('user-select').value;
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('welcome-text').innerText = `Logged in as: ${user}`;
-        // listenToData(); // Uncomment this when Firebase is added
+        listenToData(); 
     }
 
-    // --- MOCK FUNCTIONS FOR NOW (Until you add Firebase) ---
-    // These functions use localStorage so you can test it on the train offline!
-    
-    function sendData(type) {
+    window.sendData = function(type) {
         let dataObj = { user: user, time: new Date().toLocaleString() };
         
         if (type === 'goals') {
@@ -125,31 +128,44 @@
             document.getElementById('update-text').value = "";
         }
 
-        let existingData = JSON.parse(localStorage.getItem(type)) || [];
-        existingData.unshift(dataObj); // Add to top
-        localStorage.setItem(type, JSON.stringify(existingData));
-        renderMockData();
+        // Push data to Firebase Realtime Database
+        push(ref(db, type), dataObj);
     }
 
-    function renderMockData() {
-        const goals = JSON.parse(localStorage.getItem('goals')) || [];
-        document.getElementById('goals-list').innerHTML = goals.map(g => `
-            <li class="task-card">
-                <div class="task-title">${g.title}</div>
-                <div class="task-meta">Led by: <b>${g.owner}</b> | Set on: ${g.time.split(',')[0]}</div>
-            </li>
-        `).join('');
+    function listenToData() {
+        // Listen for new Goals
+        onValue(ref(db, 'goals'), (snapshot) => {
+            const list = document.getElementById('goals-list');
+            list.innerHTML = ""; 
+            snapshot.forEach((child) => {
+                const g = child.val();
+                // Add new items to the top
+                list.innerHTML = `
+                    <li class="task-card">
+                        <div class="task-title">${g.title}</div>
+                        <div class="task-meta">Led by: <b>${g.owner}</b> | Set on: ${g.time.split(',')[0]}</div>
+                    </li>
+                ` + list.innerHTML;
+            });
+        });
 
-        const updates = JSON.parse(localStorage.getItem('updates')) || [];
-        document.getElementById('updates-list').innerHTML = updates.map(u => `
-            <li class="update-item">
-                <div class="update-header">
-                    <span class="update-author">${u.user}</span>
-                    <span class="update-time">${u.time}</span>
-                </div>
-                <div>${u.text}</div>
-            </li>
-        `).join('');
+        // Listen for new Updates
+        onValue(ref(db, 'updates'), (snapshot) => {
+            const list = document.getElementById('updates-list');
+            list.innerHTML = "";
+            snapshot.forEach((child) => {
+                const u = child.val();
+                list.innerHTML = `
+                    <li class="update-item">
+                        <div class="update-header">
+                            <span class="update-author">${u.user}</span>
+                            <span class="update-time">${u.time}</span>
+                        </div>
+                        <div>${u.text}</div>
+                    </li>
+                ` + list.innerHTML;
+            });
+        });
     }
 </script>
 </body>
