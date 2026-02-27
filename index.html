@@ -63,8 +63,12 @@
 
         /* Workspace Lists */
         ul { list-style: none; padding: 0; margin: 0; }
-        .task-card, .update-item { background: #1e293b; border-left: 4px solid var(--accent1); margin-bottom: 10px; padding: 15px; border-radius: 6px; word-wrap: break-word; }
+        .task-card, .update-item { background: #1e293b; border-left: 4px solid var(--accent1); margin-bottom: 10px; padding: 15px; border-radius: 6px; word-wrap: break-word; position: relative;}
         .update-header { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--accent1); font-weight: bold; }
+        
+        /* Admin Delete Button */
+        .delete-btn { background: none; border: none; color: #ef4444; font-size: 1.2rem; cursor: pointer; transition: 0.2s; padding: 0 5px; }
+        .delete-btn:hover { transform: scale(1.2); }
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
@@ -108,12 +112,13 @@
     <div id="home" class="page active">
         <div class="panel">
             <h2>About Our Major Project</h2>
-            <div id="project-description-area">
-                <p><i>Click the "Edit Description" button below to paste your AI Nephelometer project details here...</i></p>
-            </div>
-            <br>
-            <textarea id="temp-desc-input" rows="6" placeholder="Paste your project description here..."></textarea>
-            <button class="action-btn" onclick="window.saveDescription()" style="margin-top: 10px;">Save Description</button>
+            <div id="project-description-area" style="line-height: 1.6; color: #cbd5e1;">
+                
+                <h3>AI Enhanced Portable Nephelometer</h3>
+                <p>Welcome to our final year Biomedical Engineering major project workspace. This project aims to design and develop a low-cost, smartphone-integrated nephelometer...</p>
+                <p><i>(Delete this text and write your actual project abstract, system architecture, and team roles here later using a code editor!)</i></p>
+
+                </div>
         </div>
     </div>
 
@@ -192,7 +197,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAl49ZDjLdpWiuuyxHWTy2rEKc4CI2bNAQ",
@@ -221,12 +226,27 @@
         details.style.display = details.style.display === 'block' ? 'none' : 'block';
     }
 
+    // Auto-login if previously saved
     window.onload = function() {
         const savedUser = localStorage.getItem('hubUser');
-        if (savedUser) { window.login(savedUser); }
+        if (savedUser) { 
+            user = savedUser;
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('welcome-text').innerText = `[ ${user} ]`;
+            listenToData(); 
+        }
     };
 
+    // --- SECURE LOGIN FUNCTION ---
     window.login = function(selectedUser) {
+        if (selectedUser === 'Anoop') {
+            const enteredPin = prompt("Please enter the Admin PIN to continue:");
+            if (enteredPin !== "891529") {
+                alert("Incorrect PIN. Access denied.");
+                return; // Stops the function, leaving them on the login screen
+            }
+        }
+
         user = selectedUser;
         localStorage.setItem('hubUser', user);
         document.getElementById('login-overlay').style.display = 'none';
@@ -239,10 +259,14 @@
         location.reload();
     }
 
-    window.saveDescription = function() {
-        const text = document.getElementById('temp-desc-input').value;
-        document.getElementById('project-description-area').innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
-        document.getElementById('temp-desc-input').value = "";
+    window.deleteItem = function(path, id) {
+        if (user === 'Anoop') {
+            if (confirm("Admin: Are you sure you want to delete this entry?")) {
+                remove(ref(db, `${path}/${id}`));
+            }
+        } else {
+            alert("Only Anoop has permission to delete items.");
+        }
     }
 
     window.sendData = function(type) {
@@ -251,15 +275,11 @@
         if (type === 'goals') {
             const title = document.getElementById('goal-title').value;
             if (!title) return;
-            dataObj.title = title; 
-            document.getElementById('goal-title').value = "";
-            
+            dataObj.title = title; document.getElementById('goal-title').value = "";
         } else if (type === 'updates') {
             const text = document.getElementById('update-text').value;
             if (!text) return;
-            dataObj.text = text;
-            document.getElementById('update-text').value = "";
-            
+            dataObj.text = text; document.getElementById('update-text').value = "";
         } else if (type === 'research') {
             const title = document.getElementById('res-title').value;
             if (!title) return;
@@ -269,14 +289,12 @@
             dataObj.gaps = document.getElementById('res-gaps').value;
             dataObj.link = document.getElementById('res-link').value;
             ['title', 'desc', 'takeaways', 'gaps', 'link'].forEach(id => document.getElementById(`res-${id}`).value = "");
-            
         } else if (type === 'components') {
             const item = document.getElementById('req-item').value;
             if (!item) return;
             dataObj.item = item;
             dataObj.cost = document.getElementById('req-cost').value;
             ['item', 'cost'].forEach(id => document.getElementById(`req-${id}`).value = "");
-
         } else if (type === 'purchases') {
             const item = document.getElementById('buy-item').value;
             if (!item) return;
@@ -286,17 +304,18 @@
             dataObj.link = document.getElementById('buy-link').value;
             ['item', 'qty', 'cost', 'link'].forEach(id => document.getElementById(`buy-${id}`).value = "");
         }
-
         push(ref(db, type), dataObj);
     }
 
     function listenToData() {
+        const getDeleteBtn = (path, id) => user === 'Anoop' ? `<button class="delete-btn" onclick="event.stopPropagation(); window.deleteItem('${path}', '${id}')">🗑️</button>` : '';
+
         onValue(ref(db, 'goals'), (snapshot) => {
             const list = document.getElementById('goals-list');
             list.innerHTML = ""; 
             snapshot.forEach((child) => {
                 const g = child.val();
-                list.innerHTML = `<li class="task-card"><b>${g.title}</b><br><small>Added by: ${g.user}</small></li>` + list.innerHTML;
+                list.innerHTML = `<li class="task-card"><div style="display:flex; justify-content:space-between;"><div><b>${g.title}</b><br><small>Added by: ${g.user}</small></div> ${getDeleteBtn('goals', child.key)}</div></li>` + list.innerHTML;
             });
         });
 
@@ -305,7 +324,7 @@
             list.innerHTML = "";
             snapshot.forEach((child) => {
                 const u = child.val();
-                list.innerHTML = `<li class="update-item"><div class="update-header"><span>${u.user}</span><span>${u.time}</span></div><div>${u.text}</div></li>` + list.innerHTML;
+                list.innerHTML = `<li class="update-item"><div class="update-header"><span>${u.user}</span><div><span style="font-size:0.8em; color:#94a3b8;">${u.time}</span> ${getDeleteBtn('updates', child.key)}</div></div><div>${u.text}</div></li>` + list.innerHTML;
             });
         });
 
@@ -317,8 +336,9 @@
                 const uniqueId = child.key; 
                 list.innerHTML = `
                     <div class="task-card" style="padding:0;">
-                        <div style="padding: 15px; cursor: pointer; display: flex; justify-content: space-between;" onclick="window.togglePaper('${uniqueId}')">
-                            <span style="font-weight:bold; color:var(--text);">📄 ${p.title}</span> <span>➕</span>
+                        <div style="padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items:center;" onclick="window.togglePaper('${uniqueId}')">
+                            <span style="font-weight:bold; color:var(--text);">📄 ${p.title}</span> 
+                            <div>${getDeleteBtn('research', uniqueId)} <span>➕</span></div>
                         </div>
                         <div id="details-${uniqueId}" style="display: none; padding: 15px; border-top: 1px solid #334155; background: #0f172a; font-size: 0.95rem; line-height: 1.5; color: #cbd5e1;">
                             <p><strong>Description:</strong> ${p.desc}</p>
@@ -337,29 +357,25 @@
             list.innerHTML = "";
             snapshot.forEach((child) => {
                 const c = child.val();
-                list.innerHTML = `<li class="task-card"><div class="update-header"><span>🔧 ${c.item}</span><span>₹${c.cost}</span></div><small>Requested by: ${c.user}</small></li>` + list.innerHTML;
+                list.innerHTML = `<li class="task-card"><div class="update-header"><span>🔧 ${c.item}</span><div><span>₹${c.cost}</span> ${getDeleteBtn('components', child.key)}</div></div><small>Requested by: ${c.user}</small></li>` + list.innerHTML;
             });
         });
 
         onValue(ref(db, 'purchases'), (snapshot) => {
             const list = document.getElementById('buy-list');
             list.innerHTML = "";
-            let totalSpent = 0; // Initialize total
-
+            let totalSpent = 0; 
             snapshot.forEach((child) => {
                 const p = child.val();
-                totalSpent += parseFloat(p.cost) || 0; // Add cost to total
-                
+                totalSpent += parseFloat(p.cost) || 0; 
                 list.innerHTML = `
                     <li class="update-item">
-                        <div class="update-header"><span>📦 ${p.item} (x${p.qty})</span><span>₹${p.cost}</span></div>
+                        <div class="update-header"><span>📦 ${p.item} (x${p.qty})</span><div><span>₹${p.cost}</span> ${getDeleteBtn('purchases', child.key)}</div></div>
                         <small style="color: #94a3b8;">Bought by: <b>${p.user}</b> on ${p.time}</small>
                         ${p.link ? `<br><a href="${p.link}" target="_blank" style="display: inline-block; margin-top: 8px; color: var(--accent1); text-decoration: none; font-size: 0.9em; border: 1px solid var(--accent1); padding: 4px 8px; border-radius: 4px;">🧾 View Receipt</a>` : ''}
                     </li>
                 ` + list.innerHTML;
             });
-            
-            // Update the Total Spent display
             document.getElementById('total-spent').innerText = `Total Spent: ₹${totalSpent}`;
         });
     }
