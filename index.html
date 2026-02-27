@@ -89,9 +89,10 @@
         <button class="tab-btn" onclick="window.switchTab('workspace')">⚡ Workspace</button>
     </div>
     <div class="meet-controls">
-        <span id="welcome-text" style="margin-right: 15px; color: #94a3b8;"></span>
-        <a href="https://meet.google.com/nis-txvd-oao" target="_blank">🎥 Team Meet</a>
-    </div>
+    <span id="welcome-text" style="margin-right: 15px; color: #94a3b8;"></span>
+    <a href="https://meet.google.com/nis-txvd-oao" target="_blank">🎥 Team Meet</a>
+    <button onclick="window.logout()" style="background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-left: 10px;">Logout</button>
+</div>
 </header>
 
 <div class="container">
@@ -201,6 +202,11 @@
         listenToData(); 
     }
 
+window.logout = function() {
+    localStorage.removeItem('hubUser'); // This deletes the sticky note
+    location.reload(); // This refreshes the page back to the start
+}
+    
     // -- SAVE TEMP DESCRIPTION --
     window.saveDescription = function() {
         const text = document.getElementById('temp-desc-input').value;
