@@ -35,7 +35,7 @@
         .tab-btn { background: transparent; color: #94a3b8; border: none; font-size: 1.1rem; cursor: pointer; padding: 5px 10px; transition: 0.3s; }
         .tab-btn.active, .tab-btn:hover { color: var(--accent1); text-shadow: var(--glow); border-bottom: 2px solid var(--accent1); }
         
-        /* Redesigned Meet Controls */
+        /* Meet Controls */
         .meet-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .meet-btn { background: linear-gradient(45deg, var(--accent1), var(--accent2)); color: #000; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; box-shadow: var(--glow); border: none; cursor: pointer; transition: 0.3s; }
         .meet-btn:hover { filter: brightness(1.2); }
@@ -62,12 +62,12 @@
         /* Custom Grids for Layouts */
         .split-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
 
-        /* Workspace & Accordion Lists */
+        /* Lists */
         ul { list-style: none; padding: 0; margin: 0; }
         .task-card, .update-item { background: #1e293b; border-left: 4px solid var(--accent1); margin-bottom: 10px; padding: 15px; border-radius: 6px; word-wrap: break-word; position: relative;}
         .update-header { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--accent1); font-weight: bold; }
         
-        /* Threaded Updates inside Goals */
+        /* Threaded Updates */
         .goal-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
         .goal-header:hover { opacity: 0.8; }
         .goal-thread { display: none; padding-top: 15px; margin-top: 15px; border-top: 1px solid #334155; }
@@ -81,7 +81,10 @@
         .done-btn { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.85em; margin-right: 10px; }
         .done-btn:hover { background: var(--success); color: white; }
 
-        /* --- MOBILE RESPONSIVENESS --- */
+        /* Payback Buttons */
+        .payback-btn { transition: 0.2s; }
+        .payback-btn:hover { filter: brightness(1.2); transform: scale(1.05); }
+
         @media (max-width: 768px) {
             header { flex-direction: column; align-items: flex-start; padding: 1rem; }
             .nav-tabs { justify-content: center; width: 100%; margin-bottom: 15px; }
@@ -124,9 +127,31 @@
         <div class="panel">
             <h2>About Our Major Project</h2>
             <div id="project-description-area" style="line-height: 1.6; color: #cbd5e1;">
-                <h3>AI Enhanced Portable Nephelometer</h3>
-                <p>Welcome to our final year Biomedical Engineering major project workspace. This project aims to design and develop a low-cost, smartphone-integrated nephelometer...</p>
-                <p><i>(Delete this text and write your actual project abstract here!)</i></p>
+                <h3>📱 Smartphone-Integrated Micro-Volume Nephelometer</h3>
+                <p><strong>Core Concept:</strong> Developing a portable nephelometer system that uses a smartphone camera to measure turbidity or suspended particle concentration in liquids through light scattering analysis. It uses a low-cost optical setup, a sealed disposable micro-volume cartridge, and smartphone-based image processing to create an accessible alternative to traditional laboratory nephelometers.</p>
+                
+                <hr style="border-color: #334155; margin: 20px 0;">
+                
+                <h4>⚙️ System Architecture</h4>
+                <ul>
+                    <li><strong>Optical Illumination:</strong> Monochromatic LED light source for stable, fixed-geometry illumination.</li>
+                    <li><strong>Micro-Volume Cartridge:</strong> Custom disposable sealed cartridge to prevent contamination and ensure consistent optical conditions.</li>
+                    <li><strong>Opto-Mechanical Housing:</strong> 3D-printed enclosure to align the LED, sample, and smartphone camera (at a 90° scattering angle) while blocking ambient light.</li>
+                    <li><strong>Image Processing Software:</strong> A custom pipeline to capture images, extract pixel intensity, apply background correction, and quantify scattering intensity into turbidity metrics.</li>
+                </ul>
+                
+                <hr style="border-color: #334155; margin: 20px 0;">
+                
+                <h4>🎯 Key Design Objectives</h4>
+                <ol style="color: #cbd5e1; line-height: 1.6;">
+                    <li>Ensure optical illumination stability for repeatable measurements.</li>
+                    <li>Maintain controlled scattering geometry (90° fixed angle).</li>
+                    <li>Design a sealed micro-volume cartridge for uniform conditions.</li>
+                    <li>Precision opto-mechanical alignment via 3D printing.</li>
+                    <li>Total ambient light isolation.</li>
+                    <li>Develop robust image processing algorithms to quantify scattered light.</li>
+                    <li>Establish a calibration curve linking intensity to actual particle concentration.</li>
+                </ol>
             </div>
         </div>
     </div>
@@ -158,7 +183,6 @@
                 <input type="text" id="goal-title" placeholder="Define a new Goal or Task (E.g., Design Hardware Circuit)">
                 <button class="action-btn" onclick="window.sendData('goals')">Create New Goal</button>
             </div>
-            
             <ul id="threaded-goals-list"></ul>
         </div>
     </div>
@@ -166,7 +190,7 @@
     <div id="accounts" class="page">
         <div class="split-grid">
             <div class="panel">
-                <h2>🛒 Components Required</h2>
+                <h2>🛒 Components Wishlist</h2>
                 <div class="input-group">
                     <input type="text" id="req-item" placeholder="Component Name (e.g., Laser Diode)">
                     <input type="number" id="req-cost" placeholder="Estimated Cost (₹)">
@@ -177,15 +201,15 @@
 
             <div class="panel">
                 <h2>
-                    <span>💸 Purchases & Receipts</span>
+                    <span>💸 Purchases & Split Tracker</span>
                     <span id="total-spent" style="color: var(--accent2); font-size: 0.8em; background: rgba(189, 0, 255, 0.1); padding: 5px 10px; border-radius: 8px;">Total Spent: ₹0</span>
                 </h2>
                 <div class="input-group">
                     <input type="text" id="buy-item" placeholder="What did you buy?">
                     <input type="number" id="buy-qty" placeholder="Quantity">
                     <input type="number" id="buy-cost" placeholder="Total Cost (₹)">
-                    <input type="text" id="buy-link" placeholder="Google Drive Link to Receipt Photo">
-                    <button class="action-btn" onclick="window.sendData('purchases')">Log Purchase</button>
+                    <input type="text" id="buy-link" placeholder="Google Drive Link to Receipt Photo (Optional)">
+                    <button class="action-btn" onclick="window.sendData('purchases')">Log Purchase & Split</button>
                 </div>
                 <ul id="buy-list"></ul>
             </div>
@@ -196,7 +220,6 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    // ADDED 'update' TO IMPORTS TO MARK TASKS AS DONE
     import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -213,8 +236,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     let user = "";
-
-    // Global variable to store updates temporarily for weaving into goals
     let allUpdates = []; 
 
     window.switchTab = function(tabId) {
@@ -259,7 +280,6 @@
         location.reload();
     }
 
-    // --- ADMIN ACTIONS ---
     window.deleteItem = function(path, id) {
         if (user === 'Anoop') {
             if (confirm("Admin: Are you sure you want to delete this?")) {
@@ -278,7 +298,16 @@
         }
     }
 
-    // --- DATA SENDING ---
+    // --- NEW: Toggle the Split Payback Checkboxes ---
+    window.togglePayback = function(purchaseId, personName, currentState, buyerName) {
+        // Security logic: You can only tick the box if it belongs to you, if you are the buyer receiving the money, or if you are the Admin.
+        if (user === personName || user === buyerName || user === 'Anoop') {
+            update(ref(db, `purchases/${purchaseId}/paybacks`), { [personName]: !currentState });
+        } else {
+            alert(`Only ${personName} or ${buyerName} can mark this as paid!`);
+        }
+    }
+
     window.sendData = function(type) {
         let dataObj = { user: user, time: new Date().toLocaleDateString() };
         
@@ -286,7 +315,7 @@
             const title = document.getElementById('goal-title').value;
             if (!title) return;
             dataObj.title = title;
-            dataObj.completed = false; // By default, new goals are not completed
+            dataObj.completed = false;
             document.getElementById('goal-title').value = "";
         
         } else if (type === 'research') {
@@ -308,72 +337,61 @@
 
         } else if (type === 'purchases') {
             const item = document.getElementById('buy-item').value;
-            if (!item) return;
+            const cost = parseFloat(document.getElementById('buy-cost').value);
+            if (!item || !cost) return;
+            
+            // Build the paybacks object for the other 3 team members
+            const team = ['Anoop', 'Rohan', 'Manoj', 'Sneha'];
+            let paybacksObj = {};
+            team.forEach(member => {
+                if (member !== user) { paybacksObj[member] = false; }
+            });
+
             dataObj.item = item;
-            dataObj.qty = document.getElementById('buy-qty').value;
-            dataObj.cost = document.getElementById('buy-cost').value;
+            dataObj.qty = document.getElementById('buy-qty').value || 1;
+            dataObj.cost = cost;
+            dataObj.splitCost = (cost / 4).toFixed(2); // Automatically calculates the 4-way split
             dataObj.link = document.getElementById('buy-link').value;
-            ['item', 'qty', 'cost', 'link'].forEach(id => document.getElementById(`buy-${id}`).value = "");
+            dataObj.paybacks = paybacksObj;
+
+            ['buy-item', 'buy-qty', 'buy-cost', 'buy-link'].forEach(id => document.getElementById(id).value = "");
         }
         push(ref(db, type), dataObj);
     }
 
-    // New function specific to sending a threaded update
     window.sendThreadUpdate = function(goalId) {
         const inputId = `update-input-${goalId}`;
         const text = document.getElementById(inputId).value;
         if (!text) return;
-
-        let updateObj = {
-            goalId: goalId,  // Links this update to the specific goal
-            user: user,
-            text: text,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })
-        };
-        
+        let updateObj = { goalId: goalId, user: user, text: text, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) };
         push(ref(db, 'updates'), updateObj);
-        document.getElementById(inputId).value = ""; // Clear input
+        document.getElementById(inputId).value = ""; 
     }
 
-    // --- REALTIME LISTENING ---
     function listenToData() {
         const getDeleteBtn = (path, id) => user === 'Anoop' ? `<button class="delete-btn" onclick="event.stopPropagation(); window.deleteItem('${path}', '${id}')">🗑️</button>` : '';
         const getDoneBtn = (id) => user === 'Anoop' ? `<button class="done-btn" onclick="event.stopPropagation(); window.markCompleted('${id}')">✅ Mark as Done</button>` : '';
 
-        // Step 1: Listen to all Updates constantly and save them to memory
         onValue(ref(db, 'updates'), (snapshot) => {
             allUpdates = [];
-            snapshot.forEach((child) => {
-                allUpdates.push({ id: child.key, ...child.val() });
-            });
-            // Every time an update happens, trigger a re-draw of the Goals list
+            snapshot.forEach((child) => { allUpdates.push({ id: child.key, ...child.val() }); });
             drawGoalsList(); 
         });
 
-        // Step 2: Listen to all Goals and store them in memory
         let allGoals = [];
         onValue(ref(db, 'goals'), (snapshot) => {
             allGoals = [];
-            snapshot.forEach((child) => {
-                allGoals.push({ id: child.key, ...child.val() });
-            });
+            snapshot.forEach((child) => { allGoals.push({ id: child.key, ...child.val() }); });
             drawGoalsList();
         });
 
-        // Step 3: Function to weave Goals and Updates together
         function drawGoalsList() {
             const list = document.getElementById('threaded-goals-list');
             list.innerHTML = ""; 
-
-            // Reverse to show newest goals at top
             allGoals.slice().reverse().forEach((g) => {
-                // Filter updates that belong to THIS goal
                 const myUpdates = allUpdates.filter(u => u.goalId === g.id);
                 let updatesHTML = "";
-                myUpdates.forEach(u => {
-                    updatesHTML += `<div class="thread-item"><b>${u.user}</b> <span style="font-size:0.8em; color:#94a3b8;">(${u.time})</span>: ${u.text} ${getDeleteBtn('updates', u.id)}</div>`;
-                });
-
+                myUpdates.forEach(u => { updatesHTML += `<div class="thread-item"><b>${u.user}</b> <span style="font-size:0.8em; color:#94a3b8;">(${u.time})</span>: ${u.text} ${getDeleteBtn('updates', u.id)}</div>`; });
                 const isCompleted = g.completed ? "completed-goal" : "";
                 const titlePrefix = g.completed ? "✅ [DONE] " : "🎯 ";
 
@@ -389,25 +407,22 @@
                                 <span>➕ Expand Thread</span>
                             </div>
                         </div>
-
                         <div id="details-${g.id}" class="goal-thread">
                             <div style="margin-bottom: 15px; max-height: 300px; overflow-y: auto;">
                                 ${updatesHTML || '<div style="color: #64748b; font-style: italic;">No progress updates yet...</div>'}
                             </div>
-                            
                             ${!g.completed ? `
                                 <div style="display: flex; gap: 10px;">
                                     <input type="text" id="update-input-${g.id}" placeholder="Type an update for this goal..." style="background: #0f172a;">
                                     <button class="action-btn" style="width: auto;" onclick="window.sendThreadUpdate('${g.id}')">Post</button>
                                 </div>
-                            ` : '<div style="color: var(--success); font-weight: bold; text-align: center;">This goal has been completed! Great job team.</div>'}
+                            ` : '<div style="color: var(--success); font-weight: bold; text-align: center;">This goal has been completed!</div>'}
                         </div>
                     </li>
                 `;
             });
         }
 
-        // Research Listen
         onValue(ref(db, 'research'), (snapshot) => {
             const list = document.getElementById('research-list');
             list.innerHTML = "";
@@ -431,7 +446,6 @@
             });
         });
 
-        // Components Wishlist Listen
         onValue(ref(db, 'components'), (snapshot) => {
             const list = document.getElementById('req-list');
             list.innerHTML = "";
@@ -441,19 +455,45 @@
             });
         });
 
-        // Purchases Listen
+        // --- NEW: Renders the dynamic Payback UI ---
         onValue(ref(db, 'purchases'), (snapshot) => {
             const list = document.getElementById('buy-list');
             list.innerHTML = "";
             let totalSpent = 0; 
+            
             snapshot.forEach((child) => {
                 const p = child.val();
+                const pId = child.key;
                 totalSpent += parseFloat(p.cost) || 0; 
+
+                // Build the checkboxes for the other 3 members
+                let paybacksHTML = `<div style="margin-top: 15px; background: #0f172a; padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent1);">
+                    <div style="color: #cbd5e1; font-size: 0.85em; margin-bottom: 8px;"><b>You each owe ${p.user}: ₹${p.splitCost}</b></div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">`;
+                
+                if (p.paybacks) {
+                    for (const [person, hasPaid] of Object.entries(p.paybacks)) {
+                        const icon = hasPaid ? '✅' : '🔲';
+                        const color = hasPaid ? 'var(--success)' : '#64748b';
+                        const bg = hasPaid ? 'rgba(16, 185, 129, 0.1)' : 'transparent';
+                        
+                        paybacksHTML += `
+                            <button class="payback-btn" onclick="window.togglePayback('${pId}', '${person}', ${hasPaid}, '${p.user}')" 
+                                style="background: ${bg}; border: 1px solid ${color}; color: ${color}; padding: 6px 12px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: bold; font-size: 0.85rem;">
+                                ${icon} ${person}
+                            </button>
+                        `;
+                    }
+                }
+                paybacksHTML += `</div></div>`;
+
+                // Combine into the main card
                 list.innerHTML = `
                     <li class="update-item">
-                        <div class="update-header"><span>📦 ${p.item} (x${p.qty})</span><div><span>₹${p.cost}</span> ${getDeleteBtn('purchases', child.key)}</div></div>
-                        <small style="color: #94a3b8;">Bought by: <b>${p.user}</b> on ${p.time}</small>
-                        ${p.link ? `<br><a href="${p.link}" target="_blank" style="display: inline-block; margin-top: 8px; color: var(--accent1); text-decoration: none; font-size: 0.9em; border: 1px solid var(--accent1); padding: 4px 8px; border-radius: 4px;">🧾 View Receipt</a>` : ''}
+                        <div class="update-header"><span>📦 ${p.item} (x${p.qty})</span><div><span>₹${p.cost}</span> ${getDeleteBtn('purchases', pId)}</div></div>
+                        <small style="color: #94a3b8;">Bought by: <b style="color: var(--accent1);">${p.user}</b> on ${p.time}</small>
+                        ${p.link ? `<a href="${p.link}" target="_blank" style="margin-left: 10px; color: var(--accent2); text-decoration: underline; font-size: 0.85em;">View Receipt</a>` : ''}
+                        ${paybacksHTML}
                     </li>
                 ` + list.innerHTML;
             });
