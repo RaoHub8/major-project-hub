@@ -14,6 +14,7 @@
             --accent2: #bd00ff; 
             --glow: 0 0 10px rgba(0, 243, 255, 0.5);
             --success: #10b981;
+            --danger: #ef4444;
         }
         
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
@@ -22,11 +23,7 @@
         #login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; padding: 20px;}
         .login-title { font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: var(--glow); margin-bottom: 2rem; color: var(--accent1); text-align: center; }
         .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 500px; }
-        .login-btn { 
-            background: var(--panel); color: white; border: 2px solid #334155; padding: 20px; 
-            font-size: 1.2rem; border-radius: 12px; cursor: pointer; transition: 0.3s; 
-            text-transform: uppercase; font-weight: bold; width: 100%;
-        }
+        .login-btn { background: var(--panel); color: white; border: 2px solid #334155; padding: 20px; font-size: 1.2rem; border-radius: 12px; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-weight: bold; width: 100%; }
         .login-btn:hover { border-color: var(--accent1); box-shadow: var(--glow); transform: translateY(-3px); }
 
         /* Navigation & Header */
@@ -35,12 +32,14 @@
         .tab-btn { background: transparent; color: #94a3b8; border: none; font-size: 1.1rem; cursor: pointer; padding: 5px 10px; transition: 0.3s; }
         .tab-btn.active, .tab-btn:hover { color: var(--accent1); text-shadow: var(--glow); border-bottom: 2px solid var(--accent1); }
         
-        /* Meet Controls */
+        /* Meet & Notify Controls */
         .meet-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .wa-btn { background: #25D366; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; border: none; cursor: pointer; transition: 0.3s; display: none; } /* Hidden by default */
+        .wa-btn:hover { filter: brightness(1.1); }
         .meet-btn { background: linear-gradient(45deg, var(--accent1), var(--accent2)); color: #000; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; box-shadow: var(--glow); border: none; cursor: pointer; transition: 0.3s; }
         .meet-btn:hover { filter: brightness(1.2); }
-        .logout-btn { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: bold; }
-        .logout-btn:hover { background: #ef4444; color: white; }
+        .logout-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .logout-btn:hover { background: var(--danger); color: white; }
 
         /* Main Container & Tabs */
         .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
@@ -54,13 +53,11 @@
         
         .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
         input, textarea { background: #1e293b; border: 1px solid #475569; color: white; padding: 12px; border-radius: 6px; font-family: inherit; width: 100%; box-sizing: border-box; }
+        input[type="date"] { color-scheme: dark; }
         input:focus, textarea:focus { outline: none; border-color: var(--accent1); box-shadow: 0 0 5px rgba(0,243,255,0.3); }
         
         .action-btn { background: var(--panel); border: 1px solid var(--accent2); color: white; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; }
         .action-btn:hover { background: var(--accent2); box-shadow: 0 0 10px rgba(189, 0, 255, 0.4); }
-
-        /* Custom Grids for Layouts */
-        .split-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
 
         /* Lists */
         ul { list-style: none; padding: 0; margin: 0; }
@@ -74,24 +71,24 @@
         .thread-item { background: #0f172a; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 0.9em; border-left: 2px solid var(--accent2); }
         .completed-goal { border-left-color: var(--success); opacity: 0.8; }
         .completed-goal .goal-title-text { text-decoration: line-through; color: var(--success); }
+        
+        /* Badges */
+        .deadline-badge { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; margin-top: 5px; display: inline-block; }
 
         /* Admin Buttons */
-        .delete-btn { background: none; border: none; color: #ef4444; font-size: 1.2rem; cursor: pointer; transition: 0.2s; padding: 0 5px; }
+        .delete-btn { background: none; border: none; color: var(--danger); font-size: 1.2rem; cursor: pointer; transition: 0.2s; padding: 0 5px; }
         .delete-btn:hover { transform: scale(1.2); }
         .done-btn { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.85em; margin-right: 10px; }
         .done-btn:hover { background: var(--success); color: white; }
-
-        /* Payback Buttons */
         .payback-btn { transition: 0.2s; }
         .payback-btn:hover { filter: brightness(1.2); transform: scale(1.05); }
 
         @media (max-width: 768px) {
             header { flex-direction: column; align-items: flex-start; padding: 1rem; }
             .nav-tabs { justify-content: center; width: 100%; margin-bottom: 15px; }
-            .meet-controls { justify-content: space-between; width: 100%; }
+            .meet-controls { justify-content: flex-start; width: 100%; }
             .split-grid { grid-template-columns: 1fr; }
             .grid-buttons { grid-template-columns: 1fr; }
-            .login-title { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -116,6 +113,7 @@
     </div>
     <div class="meet-controls">
         <span id="welcome-text" style="color: #94a3b8; font-weight: bold;"></span>
+        <button id="wa-notify-btn" class="wa-btn" onclick="window.notifyTeam()">📱 WhatsApp Alert</button>
         <a href="https://meet.google.com/nis-txvd-oao" target="_blank" class="meet-btn">🎥 Team Meet</a>
         <button class="logout-btn" onclick="window.logout()">Logout</button>
     </div>
@@ -128,30 +126,15 @@
             <h2>About Our Major Project</h2>
             <div id="project-description-area" style="line-height: 1.6; color: #cbd5e1;">
                 <h3>📱 Smartphone-Integrated Micro-Volume Nephelometer</h3>
-                <p><strong>Core Concept:</strong> Developing a portable nephelometer system that uses a smartphone camera to measure turbidity or suspended particle concentration in liquids through light scattering analysis. It uses a low-cost optical setup, a sealed disposable micro-volume cartridge, and smartphone-based image processing to create an accessible alternative to traditional laboratory nephelometers.</p>
-                
+                <p><strong>Core Concept:</strong> Developing a portable nephelometer system that uses a smartphone camera to measure turbidity or suspended particle concentration in liquids through light scattering analysis.</p>
                 <hr style="border-color: #334155; margin: 20px 0;">
-                
                 <h4>⚙️ System Architecture</h4>
                 <ul>
-                    <li><strong>Optical Illumination:</strong> Monochromatic LED light source for stable, fixed-geometry illumination.</li>
-                    <li><strong>Micro-Volume Cartridge:</strong> Custom disposable sealed cartridge to prevent contamination and ensure consistent optical conditions.</li>
-                    <li><strong>Opto-Mechanical Housing:</strong> 3D-printed enclosure to align the LED, sample, and smartphone camera (at a 90° scattering angle) while blocking ambient light.</li>
-                    <li><strong>Image Processing Software:</strong> A custom pipeline to capture images, extract pixel intensity, apply background correction, and quantify scattering intensity into turbidity metrics.</li>
+                    <li><strong>Optical Illumination:</strong> Monochromatic LED light source.</li>
+                    <li><strong>Micro-Volume Cartridge:</strong> Custom disposable sealed cartridge.</li>
+                    <li><strong>Opto-Mechanical Housing:</strong> 3D-printed enclosure (90° scattering angle).</li>
+                    <li><strong>Image Processing Software:</strong> Custom pipeline for turbidity metrics.</li>
                 </ul>
-                
-                <hr style="border-color: #334155; margin: 20px 0;">
-                
-                <h4>🎯 Key Design Objectives</h4>
-                <ol style="color: #cbd5e1; line-height: 1.6;">
-                    <li>Ensure optical illumination stability for repeatable measurements.</li>
-                    <li>Maintain controlled scattering geometry (90° fixed angle).</li>
-                    <li>Design a sealed micro-volume cartridge for uniform conditions.</li>
-                    <li>Precision opto-mechanical alignment via 3D printing.</li>
-                    <li>Total ambient light isolation.</li>
-                    <li>Develop robust image processing algorithms to quantify scattered light.</li>
-                    <li>Establish a calibration curve linking intensity to actual particle concentration.</li>
-                </ol>
             </div>
         </div>
     </div>
@@ -181,6 +164,12 @@
             <h2>🎯 Team Workspace & Goals</h2>
             <div class="input-group" style="max-width: 600px; margin-bottom: 30px;">
                 <input type="text" id="goal-title" placeholder="Define a new Goal or Task (E.g., Design Hardware Circuit)">
+                
+                <div id="admin-deadline-wrapper" style="display: none; flex-direction: column; gap: 5px;">
+                    <label style="color: var(--danger); font-size: 0.85em; font-weight: bold;">Admin Priority Deadline (Optional):</label>
+                    <input type="date" id="goal-deadline">
+                </div>
+
                 <button class="action-btn" onclick="window.sendData('goals')">Create New Goal</button>
             </div>
             <ul id="threaded-goals-list"></ul>
@@ -250,13 +239,16 @@
         details.style.display = details.style.display === 'block' ? 'none' : 'block';
     }
 
+    // --- NEW: WhatsApp Notify Function ---
+    window.notifyTeam = function() {
+        const message = encodeURIComponent("🚨 Hey team! I've updated the Nephelometer Project Hub with new priority tasks/deadlines. Please log in, check your goals, or join the Meet link ASAP! \n\nCheck it here: https://raohub8.github.io/major-project-hub/");
+        window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
+    }
+
     window.onload = function() {
         const savedUser = localStorage.getItem('hubUser');
         if (savedUser) { 
-            user = savedUser;
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('welcome-text').innerText = `[ ${user} ]`;
-            listenToData(); 
+            applyUserRoles(savedUser);
         }
     };
 
@@ -268,10 +260,21 @@
                 return; 
             }
         }
+        applyUserRoles(selectedUser);
+    }
+
+    function applyUserRoles(selectedUser) {
         user = selectedUser;
         localStorage.setItem('hubUser', user);
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('welcome-text').innerText = `[ ${user} ]`;
+        
+        // Show Admin features ONLY for Anoop
+        if (user === 'Anoop') {
+            document.getElementById('wa-notify-btn').style.display = 'inline-block';
+            document.getElementById('admin-deadline-wrapper').style.display = 'flex';
+        }
+
         listenToData(); 
     }
 
@@ -298,9 +301,7 @@
         }
     }
 
-    // --- NEW: Toggle the Split Payback Checkboxes ---
     window.togglePayback = function(purchaseId, personName, currentState, buyerName) {
-        // Security logic: You can only tick the box if it belongs to you, if you are the buyer receiving the money, or if you are the Admin.
         if (user === personName || user === buyerName || user === 'Anoop') {
             update(ref(db, `purchases/${purchaseId}/paybacks`), { [personName]: !currentState });
         } else {
@@ -316,7 +317,17 @@
             if (!title) return;
             dataObj.title = title;
             dataObj.completed = false;
+            
+            // Capture Deadline if Anoop set one
+            if (user === 'Anoop') {
+                const deadline = document.getElementById('goal-deadline').value;
+                if (deadline) {
+                    dataObj.deadline = deadline;
+                }
+            }
+            
             document.getElementById('goal-title').value = "";
+            document.getElementById('goal-deadline').value = "";
         
         } else if (type === 'research') {
             const title = document.getElementById('res-title').value;
@@ -340,7 +351,6 @@
             const cost = parseFloat(document.getElementById('buy-cost').value);
             if (!item || !cost) return;
             
-            // Build the paybacks object for the other 3 team members
             const team = ['Anoop', 'Rohan', 'Manoj', 'Sneha'];
             let paybacksObj = {};
             team.forEach(member => {
@@ -350,7 +360,7 @@
             dataObj.item = item;
             dataObj.qty = document.getElementById('buy-qty').value || 1;
             dataObj.cost = cost;
-            dataObj.splitCost = (cost / 4).toFixed(2); // Automatically calculates the 4-way split
+            dataObj.splitCost = (cost / 4).toFixed(2); 
             dataObj.link = document.getElementById('buy-link').value;
             dataObj.paybacks = paybacksObj;
 
@@ -392,14 +402,18 @@
                 const myUpdates = allUpdates.filter(u => u.goalId === g.id);
                 let updatesHTML = "";
                 myUpdates.forEach(u => { updatesHTML += `<div class="thread-item"><b>${u.user}</b> <span style="font-size:0.8em; color:#94a3b8;">(${u.time})</span>: ${u.text} ${getDeleteBtn('updates', u.id)}</div>`; });
+                
                 const isCompleted = g.completed ? "completed-goal" : "";
                 const titlePrefix = g.completed ? "✅ [DONE] " : "🎯 ";
+                
+                // NEW: Render Deadline Badge if it exists
+                const deadlineHTML = (g.deadline && !g.completed) ? `<br><span class="deadline-badge">📅 DEADLINE: ${g.deadline}</span>` : '';
 
                 list.innerHTML += `
                     <li class="task-card ${isCompleted}">
                         <div class="goal-header" onclick="window.toggleAccordion('${g.id}')">
                             <div class="goal-title-text" style="font-size: 1.1em; font-weight: bold;">
-                                ${titlePrefix} ${g.title} <br><small style="color:#94a3b8; font-weight:normal;">Created by ${g.user}</small>
+                                ${titlePrefix} ${g.title} ${deadlineHTML} <br><small style="color:#94a3b8; font-weight:normal;">Created by ${g.user}</small>
                             </div>
                             <div>
                                 ${!g.completed ? getDoneBtn(g.id) : ''}
@@ -455,7 +469,6 @@
             });
         });
 
-        // --- NEW: Renders the dynamic Payback UI ---
         onValue(ref(db, 'purchases'), (snapshot) => {
             const list = document.getElementById('buy-list');
             list.innerHTML = "";
@@ -466,7 +479,6 @@
                 const pId = child.key;
                 totalSpent += parseFloat(p.cost) || 0; 
 
-                // Build the checkboxes for the other 3 members
                 let paybacksHTML = `<div style="margin-top: 15px; background: #0f172a; padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent1);">
                     <div style="color: #cbd5e1; font-size: 0.85em; margin-bottom: 8px;"><b>You each owe ${p.user}: ₹${p.splitCost}</b></div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">`;
@@ -487,7 +499,6 @@
                 }
                 paybacksHTML += `</div></div>`;
 
-                // Combine into the main card
                 list.innerHTML = `
                     <li class="update-item">
                         <div class="update-header"><span>📦 ${p.item} (x${p.qty})</span><div><span>₹${p.cost}</span> ${getDeleteBtn('purchases', pId)}</div></div>
