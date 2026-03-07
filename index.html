@@ -441,8 +441,14 @@
                 const isCompleted = g.completed ? "completed-goal" : "";
                 const titlePrefix = g.completed ? "✅ [DONE] " : "🎯 ";
                 
-                // NEW: Render Deadline Badge if it exists
-                const deadlineHTML = (g.deadline && !g.completed) ? `<br><span class="deadline-badge">📅 DEADLINE: ${g.deadline}</span>` : '';
+                let deadlineHTML = "";
+if (g.deadline && !g.completed) {
+    const cleanDate = g.deadline.replace(/-/g, '');
+    const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(g.title)}&dates=${cleanDate}/${cleanDate}`;
+    deadlineHTML = `<br><span class="deadline-badge">📅 DEADLINE: ${g.deadline}</span> 
+    <a href="${calUrl}" target="_blank" style="background: #2563eb; color: white; padding: 3px 8px; border-radius: 4px; text-decoration: none; font-size: 0.75em; font-weight: bold; margin-left: 10px;">🗓️ Add to Calendar</a>
+    <div class="goal-timer" data-deadline="${g.deadline}T23:59:59" style="color: var(--accent1); font-family: monospace; font-size: 0.9em; margin-top: 5px; font-weight: bold;">⏳ Calculating time left...</div>`;
+}                
 
                 list.innerHTML += `
                     <li class="task-card ${isCompleted}">
@@ -546,6 +552,24 @@
             document.getElementById('total-spent').innerText = `Total Spent: ₹${totalSpent}`;
         });
     }
+    // --- LIVE TICKING TIMER ENGINE ---
+    setInterval(() => {
+        const now = new Date().getTime();
+        document.querySelectorAll('.goal-timer').forEach(timer => {
+            const distance = new Date(timer.getAttribute('data-deadline')).getTime() - now;
+            if (distance < 0) {
+                timer.innerHTML = "🚨 TIME UP! OVERDUE!";
+                timer.style.color = "var(--danger)";
+            } else {
+                const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((distance % (1000 * 60)) / 1000);
+                timer.innerHTML = `⏳ Time Left: ${d}d ${h}h ${m}m ${s}s`;
+                timer.style.color = d < 2 ? "var(--danger)" : "var(--accent1)"; // Turns red if less than 48 hours!
+            }
+        });
+    }, 1000);
 </script>
 </body>
 </html>
